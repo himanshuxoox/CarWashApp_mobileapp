@@ -7,7 +7,7 @@ import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 
 const AppNavigator = () => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, hasProfile } = useAuth();  // Add hasProfile
 
   if (isLoading) {
     return (
@@ -17,9 +17,28 @@ const AppNavigator = () => {
     );
   }
 
+  // Show appropriate navigator based on auth state
+  const getNavigator = () => {
+    if (!isAuthenticated) {
+      // Not logged in -> Show AuthNavigator (Login, OTP)
+      console.log('📱 Showing AuthNavigator - Not authenticated');
+      return <AuthNavigator />;
+    }
+    
+    if (isAuthenticated && !hasProfile) {
+      // Logged in but no profile -> Stay in AuthNavigator (ProfileSetup)
+      console.log('📱 Showing AuthNavigator - Need profile setup');
+      return <AuthNavigator />;
+    }
+    
+    // Logged in with profile -> Show MainNavigator (Home, Profile)
+    console.log('📱 Showing MainNavigator - Authenticated with profile');
+    return <MainNavigator />;
+  };
+
   return (
     <NavigationContainer>
-      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+      {getNavigator()}
     </NavigationContainer>
   );
 };

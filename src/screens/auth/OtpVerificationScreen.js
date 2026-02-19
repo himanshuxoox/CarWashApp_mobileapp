@@ -29,6 +29,9 @@ const OtpVerificationScreen = ({ route, navigation }) => {
   const [resendTimer, setResendTimer] = useState(APP_CONFIG.OTP_RESEND_TIMEOUT);
   const [canResend, setCanResend] = useState(false);
 
+  const [navigationReady, setNavigationReady] = useState(false);
+  const [navigationDestination, setNavigationDestination] = useState(null);
+
   // Countdown timer for resend
   useEffect(() => {
     if (resendTimer > 0) {
@@ -48,37 +51,66 @@ const OtpVerificationScreen = ({ route, navigation }) => {
     }
   }, [otp]);
 
-  const handleVerifyOtp = async () => {
-    if (!validateOtp(otp)) {
-      setError('Please enter a valid 6-digit OTP');
-      return;
-    }
-
-    setError('');
-    setLoading(true);
-
-    try {
-      const result = await login(phoneNumber, otp);
+// Handle navigation after successful login
+  useEffect(() => {
+    if (navigationReady && navigationDestination) {
+      console.log('🚀 Executing navigation to:', navigationDestination);
       
-      if (result.success) {
-        Alert.alert(
-          'Success!',
-          'You have been logged in successfully.',
-          [{ text: 'OK' }]
-        );
-        // Navigation is handled by AuthContext
-      } else {
-        setError(result.message || 'Invalid OTP. Please try again.');
-        setOtp(''); // Clear OTP
+      if (navigationDestination === 'Main') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      } else if (navigationDestination === 'ProfileSetup') {
+        navigation.navigate('ProfileSetup');
       }
-    } catch (err) {
-      setError(err.message || 'Verification failed. Please try again.');
+      
+      // Reset navigation state
+      setNavigationReady(false);
+      setNavigationDestination(null);
+    }
+  }, [navigationReady, navigationDestination, navigation]);
+
+const handleVerifyOtp = async () => {
+  if (!validateOtp(otp)) {
+    setError('Please enter a valid 6-digit OTP');
+    return;
+  }
+
+  setError('');
+  setLoading(true);
+
+  try {
+    const result = await login(phoneNumber, otp);
+    
+    console.log('🎯 Login Result:', result);
+    console.log('🎯 hasProfile:', result.hasProfile);
+    
+    if (result.success) {
+      setLoading(false);
+      
+      // Navigate based on profile status
+      if (result.hasProfile === true) {
+        console.log('✅ Has profile - AppNavigator will show MainNavigator');
+        // AppNavigator will automatically switch to MainNavigator
+        // No manual navigation needed!
+      } else {
+        console.log('✅ No profile - Navigating to ProfileSetup');
+        // Navigate to ProfileSetup (still in AuthNavigator)
+        navigation.navigate('ProfileSetup');
+      }
+    } else {
+      setError(result.message || 'Invalid OTP. Please try again.');
       setOtp('');
-    } finally {
       setLoading(false);
     }
-  };
-
+  } catch (err) {
+    console.error('❌ Verify error:', err);
+    setError(err.message || 'Verification failed. Please try again.');
+    setOtp('');
+    setLoading(false);
+  }
+};
   const handleResendOtp = async () => {
     if (!canResend) return;
 
@@ -154,6 +186,14 @@ const OtpVerificationScreen = ({ route, navigation }) => {
             disabled={otp.length !== APP_CONFIG.OTP_LENGTH || loading}
             style={styles.button}
           />
+
+          <Button
+            title="TEST - Go to Profile"
+            onPress={() => {
+            console.log('🧪 Manual navigation test');
+             navigation.navigate('ProfileSetup');
+               }}
+            />
 
           {/* Resend OTP */}
           <View style={styles.resendContainer}>

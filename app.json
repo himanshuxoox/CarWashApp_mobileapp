@@ -13,17 +13,47 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.carwash.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "CarWash needs your location to find car wash services near you and for booking confirmation.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "CarWash needs your location to provide better service and track your bookings.",
+        "NSLocationAlwaysUsageDescription": "CarWash uses your location to notify you when service providers are nearby."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.carwash.mobile",
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "INTERNET"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow CarWash to use your location to provide services near you.",
+          "locationAlwaysPermission": "Allow CarWash to use your location for better service.",
+          "locationWhenInUsePermission": "Allow CarWash to use your location while using the app.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ]
+    ]
   }
 }
