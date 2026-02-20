@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-//import LinearGradient from 'react-native-linear-gradient';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS, SHADOWS } from '../../constants/colors';
@@ -32,8 +31,12 @@ const ServiceCard = ({ icon, title, price, onPress }) => (
 );
 
 const HomeScreen = ({ navigation }) => {
-  const { phoneNumber, logout } = useAuth();
+  // Get user object along with phoneNumber
+  const { user, phoneNumber, logout } = useAuth();
   const [selectedService, setSelectedService] = useState(null);
+
+  // Extract user name with fallback
+  const displayName = user?.name || phoneNumber || 'Guest';
 
   const services = [
     { id: 1, icon: 'local-car-wash', title: 'Basic Wash', price: 299 },
@@ -66,7 +69,12 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.headerGreeting}>Hello! 👋</Text>
-            <Text style={styles.headerPhone}>{phoneNumber}</Text>
+            {/* Display user name instead of phone number */}
+            <Text style={styles.headerName}>{displayName}</Text>
+            {/* Optional: Show phone number in smaller text */}
+            {user?.name && (
+              <Text style={styles.headerPhone}>{phoneNumber}</Text>
+            )}
           </View>
           <TouchableOpacity
             style={styles.logoutButton}
@@ -131,11 +139,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.surface,
     marginBottom: 4,
+    opacity: 0.9,
   },
-  headerPhone: {
-    fontSize: 20,
+  headerName: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.surface,
+    marginBottom: 2,
+  },
+  headerPhone: {
+    fontSize: 12,
+    color: COLORS.surface,
+    opacity: 0.7,
   },
   logoutButton: {
     width: 44,
