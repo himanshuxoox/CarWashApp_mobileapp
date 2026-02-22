@@ -11,10 +11,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS, SHADOWS } from '../../constants/colors';
 import { useAuth } from '../../context/AuthContext';
+import { createBooking } from '../../api/bookingApi';
+import { SERVICE_TYPES } from '../../constants/config';
 import Button from '../../components/Button';
 
-const ServiceCard = ({ icon, title, price, onPress }) => (
-  <TouchableOpacity style={styles.serviceCard} onPress={onPress}>
+const ServiceCard = ({ icon, title, price, onPress, loading }) => (
+  <TouchableOpacity 
+    style={styles.serviceCard} 
+    onPress={onPress}
+    disabled={loading}
+  >
     <LinearGradient
       colors={COLORS.gradient.primary}
       style={styles.serviceIcon}
@@ -24,42 +30,123 @@ const ServiceCard = ({ icon, title, price, onPress }) => (
     <Text style={styles.serviceTitle}>{title}</Text>
     <Text style={styles.servicePrice}>₹{price}</Text>
     <View style={styles.serviceButton}>
-      <Text style={styles.serviceButtonText}>Book Now</Text>
+      <Text style={styles.serviceButtonText}>
+        {loading ? 'Booking...' : 'Book Now'}
+      </Text>
       <Icon name="arrow-forward" size={16} color={COLORS.primary} />
     </View>
   </TouchableOpacity>
 );
 
 const HomeScreen = ({ navigation }) => {
-  // Get user object along with phoneNumber
   const { user, phoneNumber, logout } = useAuth();
-  const [selectedService, setSelectedService] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingService, setLoadingService] = useState(null);
 
-  // Extract user name with fallback
   const displayName = user?.name || phoneNumber || 'Guest';
 
   const services = [
-    { id: 1, icon: 'local-car-wash', title: 'Basic Wash', price: 299 },
-    { id: 2, icon: 'brush', title: 'Premium Wash', price: 499 },
-    { id: 3, icon: 'build', title: 'Interior Clean', price: 399 },
-    { id: 4, icon: 'settings', title: 'Full Service', price: 799 },
+    { 
+      id: 1, 
+      icon: 'local-car-wash', 
+      title: 'Basic Wash', 
+      price: 299,
+      type: SERVICE_TYPES.BASIC_WASH
+    },
+    { 
+      id: 2, 
+      icon: 'brush', 
+      title: 'Premium Wash', 
+      price: 499,
+      type: SERVICE_TYPES.PREMIUM_WASH
+    },
+    { 
+      id: 3, 
+      icon: 'build', 
+      title: 'Interior Clean', 
+      price: 399,
+      type: SERVICE_TYPES.INTERIOR_CLEAN
+    },
+    { 
+      id: 4, 
+      icon: 'settings', 
+      title: 'Full Service', 
+      price: 799,
+      type: SERVICE_TYPES.FULL_SERVICE
+    },
   ];
 
-  const handleServiceSelect = (service) => {
-    setSelectedService(service);
+  const handleServiceSelect = async (service) => {
     Alert.alert(
       'Book Service',
       `Do you want to book ${service.title} for ₹${service.price}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Book',
-          onPress: () => {
-            Alert.alert('Success', 'Booking confirmed!');
-          },
+          text: 'Book Now',
+          onPress: () => handleBooking(service),
         },
       ]
     );
+  };
+
+  const handleBooking = async (service) => {
+    if (!user || !user.address) {
+      Alert.alert(
+        'Profile Incomplete',
+        'Please complete your profile with address details first.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Complete Profile',
+            onPress: () => navigation.navigate('Profile'),
+          },
+        ]
+      );
+      return;
+    }
+
+    setLoadingService(service.id);
+
+    try {
+      const bookingData = {
+        userName: user.name,
+        serviceType: service.type,
+        price: service.price,
+        scheduledDateTime: new Date().toISOString(),
+        addressLine1: user.address.line1,
+        addressLine2: user.address.line2,
+        city: user.address.city,
+        state: user.address.state,
+        postalCode: user.address.postalCode,
+        latitude: user.address.latitude,
+        longitude: user.address.longitude,
+      };
+
+      const booking = await createBooking(bookingData);
+
+      Alert.alert(
+        'Booking Successful! 🎉',
+        `Your ${service.title} has been booked.\nBooking ID: ${booking.id}`,
+        [
+          { text: 'OK' },
+          {
+            text: 'View Bookings',
+            onPress: () => {
+              // Navigate to bookings screen
+              console.log('Navigate to bookings');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Booking Failed',
+        error.message || 'Failed to create booking. Please try again.'
+      );
+    } finally {
+      setLoadingService(null);
+    }
   };
 
   return (
@@ -69,9 +156,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.headerGreeting}>Hello! 👋</Text>
-            {/* Display user name instead of phone number */}
             <Text style={styles.headerName}>{displayName}</Text>
-            {/* Optional: Show phone number in smaller text */}
             {user?.name && (
               <Text style={styles.headerPhone}>{phoneNumber}</Text>
             )}
@@ -99,6 +184,7 @@ const HomeScreen = ({ navigation }) => {
               <ServiceCard
                 key={service.id}
                 {...service}
+                loading={loadingService === service.id}
                 onPress={() => handleServiceSelect(service)}
               />
             ))}
@@ -117,6 +203,7 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
