@@ -5,7 +5,7 @@
 // export const API_BASE_URL = 'http://10.0.2.2:8081'; // For Android emulator
 //export const API_BASE_URL = 'http://192.168.1.102:8080'; // For iOS simulator
 
- export const API_BASE_URL ='http://10.161.27.154:8080';//pnb wifi
+ export const API_BASE_URL ='http://192.168.1.109:8080';//pnb wifi
 
 export const API_ENDPOINTS = {
   SEND_OTP: '/auth/send-otp',
