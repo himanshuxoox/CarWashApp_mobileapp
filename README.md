@@ -924,5 +924,7 @@ For support and queries:
 ---
 
 <div align="center">
-  <p>Made in India 🇮🇳</p>
+  <p>Made with ❤️ by Himanshu Singh</p>
+  <p>⭐ Star this repository if you find it helpful!</p>
 </div>
+
