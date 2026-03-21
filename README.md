@@ -1,10 +1,10 @@
-
-![carwash_horizontal_preview](https://github.com/user-attachments/assets/5772b573-0801-42f2-a3cb-ca9c4e323dcc)
-
 "Full-stack car wash booking system with mobile app + microservices backend"
 🚗 Car Wash Mobile App
 
 A modern Car Wash Booking Mobile Application that allows users to book services, manage profiles, and track bookings seamlessly.
+
+![carwash_horizontal_preview](https://github.com/user-attachments/assets/5772b573-0801-42f2-a3cb-ca9c4e323dcc)
+
 
 📱 App Preview
 🏠 Home Screen & Services
